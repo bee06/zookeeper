@@ -119,12 +119,15 @@ public class QuorumPeerMain {
                 .getSnapRetainCount(), config.getPurgeInterval());
         purgeMgr.start();
 
+        // 这里判断是单机还是集群
         if (args.length == 1 && config.isDistributed()) {
+            // 集群
             runFromConfig(config);
         } else {
             LOG.warn("Either no config or no quorum defined in config, running "
                     + " in standalone mode");
             // there is only server in the quorum -- run as standalone
+            //仲裁中只有服务器-独立运行
             ZooKeeperServerMain.main(args);
         }
     }
@@ -157,7 +160,9 @@ public class QuorumPeerMain {
                       true);
           }
 
+          //初始化 选取
           quorumPeer = getQuorumPeer();
+          //事务日志
           quorumPeer.setTxnFactory(new FileTxnSnapLog(
                       config.getDataLogDir(),
                       config.getDataDir()));
@@ -165,6 +170,7 @@ public class QuorumPeerMain {
           quorumPeer.enableLocalSessionsUpgrading(
               config.isLocalSessionsUpgradingEnabled());
           //quorumPeer.setQuorumPeers(config.getAllMembers());
+          // 选取算法
           quorumPeer.setElectionType(config.getElectionAlg());
           quorumPeer.setMyid(config.getServerId());
           quorumPeer.setTickTime(config.getTickTime());

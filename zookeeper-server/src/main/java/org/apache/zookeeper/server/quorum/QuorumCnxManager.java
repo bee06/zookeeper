@@ -79,47 +79,54 @@ import org.slf4j.LoggerFactory;
  * message to the tail of the queue, thus changing the order of messages.
  * Although this is not a problem for the leader election, it could be a problem
  * when consolidating peer communication. This is to be verified, though.
+ * </br>
+ *此类为使用TCP的领导者选举实现了一个连接管理器。它为每对服务器维护一个连接。棘手的部分是要确保每对运行正常且可以通过网络进行通信的服务器之间都只有一个连接。
+ * 如果两个服务器尝试同时启动连接，则连接管理器将使用一种非常简单的打破平局机制，根据双方的IP地址来确定要删除的连接。对于每个对等方，管理器都会维护要发送的消息队列。
+ * 如果与任何特定对等方的连接断开，则发送方线程会将消息放回列表中。由于此实现当前使用队列实现来维护要发送到另一个对等方的消息，因此我们将消息添加到队列的尾部，从而更改消息的顺序。
+ * 尽管这对于领导人选举来说不是问题，但在巩固对等沟通时可能是一个问题。不过，这有待验证。
  *
+ * 如上图所示，Leader选举涉及到两个核心类：QuorumCnxManager和FastLeaderElection，红色线之上的是QuorumCnxManager工作区域，红色线之下的是FastLeaderElection工作区域。
+ * 搞懂这两个类基本上对Zookeeper的选举流程及原理就比较清楚了。选举算法逻辑被封装在FastLeaderElection类中，后面会进行分析；而QuorumCnxManager则用于管理维护选举期间的网络IO。
  */
 
 public class QuorumCnxManager {
     private static final Logger LOG = LoggerFactory.getLogger(QuorumCnxManager.class);
 
-    /*
+    /**
      * Maximum capacity of thread queues
      */
     static final int RECV_CAPACITY = 100;
-    // Initialized to 1 to prevent sending
-    // stale notifications to peers
+    /**
+     Initialized to 1 to prevent sending
+     stale notifications to peers
+    */
     static final int SEND_CAPACITY = 1;
 
     static final int PACKETMAXSIZE = 1024 * 512;
 
-    /*
+    /**
      * Negative counter for observer server ids.
      */
-
     private AtomicLong observerCounter = new AtomicLong(-1);
 
-    /*
+    /**
      * Protocol identifier used among peers
      */
     public static final long PROTOCOL_VERSION = -65536L;
 
-    /*
+    /**
      * Max buffer size to be read from the network.
      */
     static public final int maxBuffer = 2048;
 
-    /*
+    /**
      * Connection time out value in milliseconds
      */
-
     private int cnxTO = 5000;
 
     final QuorumPeer self;
 
-    /*
+    /**
      * Local IP address
      */
     final long mySid;
@@ -131,23 +138,23 @@ public class QuorumCnxManager {
     private QuorumAuthServer authServer;
     private QuorumAuthLearner authLearner;
     private boolean quorumSaslAuthEnabled;
-    /*
+    /**
      * Counter to count connection processing threads.
      */
     private AtomicInteger connectionThreadCnt = new AtomicInteger(0);
 
-    /*
+    /**
      * Mapping from Peer to Thread number
      */
     final ConcurrentHashMap<Long, SendWorker> senderWorkerMap;
     final ConcurrentHashMap<Long, ArrayBlockingQueue<ByteBuffer>> queueSendMap;
     final ConcurrentHashMap<Long, ByteBuffer> lastMessageSent;
 
-    /*
+    /**
      * Reception queue
      */
     public final ArrayBlockingQueue<Message> recvQueue;
-    /*
+    /**
      * Object to synchronize access to recvQueue
      */
     private final Object recvQLock = new Object();
@@ -158,22 +165,22 @@ public class QuorumCnxManager {
 
     volatile boolean shutdown = false;
 
-    /*
+    /**
      * Listener thread
      */
     public final Listener listener;
 
-    /*
+    /**
      * Counter to count worker threads
      */
     private AtomicInteger threadCnt = new AtomicInteger(0);
 
-    /*
+    /**
      * Socket options for TCP keepalive
      */
     private final boolean tcpKeepAlive = Boolean.getBoolean("zookeeper.tcpKeepAlive");
 
-    /*
+    /**
      * Socket factory, allowing the injection of custom socket implementations for testing
      */
     static final Supplier<Socket> DEFAULT_SOCKET_FACTORY = () -> new Socket();
@@ -193,7 +200,7 @@ public class QuorumCnxManager {
         long sid;
     }
 
-    /*
+    /**
      * This class parses the initial identification sent out by peers with their
      * sid & hostname.
      */
@@ -489,8 +496,9 @@ public class QuorumCnxManager {
 
             SendWorker vsw = senderWorkerMap.get(sid);
 
-            if(vsw != null)
+            if(vsw != null) {
                 vsw.finish();
+            }
 
             senderWorkerMap.put(sid, sw);
             queueSendMap.putIfAbsent(sid, new ArrayBlockingQueue<ByteBuffer>(
@@ -626,7 +634,8 @@ public class QuorumCnxManager {
             // we saw this case in ZOOKEEPER-2164
             LOG.warn("We got a connection request from a server with our own ID. "
                     + "This should be either a configuration error, or a bug.");
-        } else { // Otherwise start worker threads to receive data.
+        } else {
+            // Otherwise start worker threads to receive data.
             SendWorker sw = new SendWorker(sock, sid);
             RecvWorker rw = new RecvWorker(sock, din, sid, sw);
             sw.setRecv(rw);
@@ -742,7 +751,6 @@ public class QuorumCnxManager {
      * Try to establish a connection with each server if one
      * doesn't exist.
      */
-
     public void connectAll(){
         long sid;
         for(Enumeration<Long> en = queueSendMap.keys();
@@ -894,6 +902,7 @@ public class QuorumCnxManager {
         }
 
         /**
+         * Listener的run方法实现也非常简单：初始化一个ServerSocket，然后在一个while循环中调用accept接收客户端
          * Sleeps on accept().
          */
         @Override

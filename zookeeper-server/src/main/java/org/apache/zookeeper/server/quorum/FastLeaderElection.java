@@ -50,8 +50,6 @@ import org.slf4j.LoggerFactory;
  * finalizeWait determines the amount of time to wait until deciding upon a leader.
  * This is part of the leader election algorithm.
  */
-
-
 public class FastLeaderElection implements Election {
     private static final Logger LOG = LoggerFactory.getLogger(FastLeaderElection.class);
 
@@ -710,8 +708,8 @@ public class FastLeaderElection implements Election {
      * Check if a pair (server id, zxid) succeeds our
      * current vote.
      *
-     * @param id    Server identifier
-     * @param zxid  Last zxid observed by the issuer of this vote
+     * @param newId    Server identifier
+     * @param newZxid  Last zxid observed by the issuer of this vote
      */
     protected boolean totalOrderPredicate(long newId, long newZxid, long newEpoch, long curId, long curZxid, long curEpoch) {
         LOG.debug("id: " + newId + ", proposed id: " + curId + ", zxid: 0x" +
@@ -722,9 +720,9 @@ public class FastLeaderElection implements Election {
 
         /*
          * We return true if one of the following three cases hold:
-         * 1- New epoch is higher
-         * 2- New epoch is the same as current epoch, but new zxid is higher
-         * 3- New epoch is the same as current epoch, new zxid is the same
+         * 1- New epoch is higher  新的epoch 大于 当前的
+         * 2- New epoch is the same as current epoch, but new zxid is higher  如果epoch相等，则比较zxid
+         * 3- New epoch is the same as current epoch, new zxid is the same  如果zxid相等增比较  服务器id
          *  as current zxid, but server id is higher.
          */
 
@@ -790,8 +788,11 @@ public class FastLeaderElection implements Election {
          */
 
         if(leader != self.getId()){
-            if(votes.get(leader) == null) predicate = false;
-            else if(votes.get(leader).getState() != ServerState.LEADING) predicate = false;
+            if(votes.get(leader) == null) {
+                predicate = false;
+            } else if(votes.get(leader).getState() != ServerState.LEADING) {
+                predicate = false;
+            }
         } else if(logicalclock.get() != electionEpoch) {
             predicate = false;
         }
@@ -838,9 +839,11 @@ public class FastLeaderElection implements Election {
      * @return long
      */
     private long getInitId(){
-        if(self.getQuorumVerifier().getVotingMembers().containsKey(self.getId()))       
+        if(self.getQuorumVerifier().getVotingMembers().containsKey(self.getId())) {
             return self.getId();
-        else return Long.MIN_VALUE;
+        } else {
+            return Long.MIN_VALUE;
+        }
     }
 
     /**
@@ -849,9 +852,11 @@ public class FastLeaderElection implements Election {
      * @return long
      */
     private long getInitLastLoggedZxid(){
-        if(self.getLearnerType() == LearnerType.PARTICIPANT)
+        if(self.getLearnerType() == LearnerType.PARTICIPANT) {
             return self.getLastLoggedZxid();
-        else return Long.MIN_VALUE;
+        } else {
+            return Long.MIN_VALUE;
+        }
     }
 
     /**
@@ -860,15 +865,17 @@ public class FastLeaderElection implements Election {
      * @return long
      */
     private long getPeerEpoch(){
-        if(self.getLearnerType() == LearnerType.PARTICIPANT)
-        	try {
-        		return self.getCurrentEpoch();
-        	} catch(IOException e) {
-        		RuntimeException re = new RuntimeException(e.getMessage());
-        		re.setStackTrace(e.getStackTrace());
-        		throw re;
-        	}
-        else return Long.MIN_VALUE;
+        if(self.getLearnerType() == LearnerType.PARTICIPANT) {
+            try {
+                return self.getCurrentEpoch();
+            } catch(IOException e) {
+                RuntimeException re = new RuntimeException(e.getMessage());
+                re.setStackTrace(e.getStackTrace());
+                throw re;
+            }
+        } else {
+            return Long.MIN_VALUE;
+        }
     }
 
     /**
@@ -876,6 +883,7 @@ public class FastLeaderElection implements Election {
      * changes its state to LOOKING, this method is invoked, and it
      * sends notifications to all other peers.
      */
+    @Override
     public Vote lookForLeader() throws InterruptedException {
         try {
             self.jmxLeaderElectionBean = new LeaderElectionBean();
@@ -894,7 +902,7 @@ public class FastLeaderElection implements Election {
             HashMap<Long, Vote> outofelection = new HashMap<Long, Vote>();
 
             int notTimeout = finalizeWait;
-
+            // 更新提议
             synchronized(this){
                 logicalclock.incrementAndGet();
                 updateProposal(getInitId(), getInitLastLoggedZxid(), getPeerEpoch());
@@ -902,6 +910,7 @@ public class FastLeaderElection implements Election {
 
             LOG.info("New election. My id =  " + self.getId() +
                     ", proposed zxid=0x" + Long.toHexString(proposedZxid));
+            // 发送通知
             sendNotifications();
 
             /*

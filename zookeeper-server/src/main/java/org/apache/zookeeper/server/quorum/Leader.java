@@ -66,6 +66,9 @@ public class Leader {
         LOG.info("TCP NoDelay set to: " + nodelay);
     }
 
+    /**
+     * 提议
+     */
     static public class Proposal  extends SyncedLearnerTracker {
         public QuorumPacket packet;
         public Request request;

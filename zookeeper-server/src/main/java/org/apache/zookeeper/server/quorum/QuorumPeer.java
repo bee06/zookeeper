@@ -80,15 +80,23 @@ import org.slf4j.LoggerFactory;
 import static org.apache.zookeeper.common.NetUtils.formatInetAddr;
 
 /**
+ * 这个列管理的选举的协议，这个类有三个状态
+ *
  * This class manages the quorum protocol. There are three states this server
  * can be in:
  * <ol>
  * <li>Leader election - each server will elect a leader (proposing itself as a
- * leader initially).</li>
+ * leader initially).
+ *  领导者选举-每个服务器将选举一个领导者（最初建议自己担任领导者）
+ * </li>
  * <li>Follower - the server will synchronize with the leader and replicate any
- * transactions.</li>
+ * transactions.
+ * 追随者-服务器将与领导者同步并复制任何交易
+ * </li>
  * <li>Leader - the server will process requests and forward them to followers.
  * A majority of followers must log the request before it can be accepted.
+ *
+ * 领导者-服务器将处理请求并将其转发给关注者。大多数关注者必须先记录请求，然后才能接受该请求
  * </ol>
  *
  * This class will setup a datagram socket that will always respond with its
@@ -395,6 +403,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
 
 
     public enum ServerState {
+        // 选取模式   追随模式  领导模式   观察模式
         LOOKING, FOLLOWING, LEADING, OBSERVING;
     }
 
@@ -884,18 +893,26 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         if (!getView().containsKey(myid)) {
             throw new RuntimeException("My id " + myid + " not in the peer list");
          }
+        // //从事务日志目录dataLogDir和数据快照目录dataDir中恢复出DataTree数据
         loadDataBase();
+        // 开启对客户端的连接端口,启动ServerCnxnFactory主线程
         startServerCnxnFactory();
         try {
+            // 管理后台服务
             adminServer.start();
         } catch (AdminServerException e) {
             LOG.warn("Problem starting AdminServer", e);
             System.out.println(e);
         }
+        // todo leader选取  创建出选举算法
         startLeaderElection();
+        // 启动QuorumPeer线程，在该线程中进行服务器状态的检查
         super.start();
     }
 
+    /**
+     * 涉及到的核心类是ZKDatabase，并借助于FileTxnSnapLog工具类将snap和transaction log反序列化到内存中，最终构建出内存数据结构DataTree
+     */
     private void loadDataBase() {
         try {
             zkDb.loadDataBase();
@@ -945,9 +962,12 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         responder.running = false;
         responder.interrupt();
     }
+
     synchronized public void startLeaderElection() {
        try {
+           // 是选取模式
            if (getPeerState() == ServerState.LOOKING) {
+               // 创建选票 volatile 修饰
                currentVote = new Vote(myid, getLastLoggedZxid(), getCurrentEpoch());
            }
        } catch(IOException e) {
@@ -1086,6 +1106,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             QuorumCnxManager.Listener listener = qcm.listener;
             if(listener != null){
                 listener.start();
+                // 构建一种选取算法，
                 FastLeaderElection fle = new FastLeaderElection(this, qcm);
                 fle.start();
                 le = fle;

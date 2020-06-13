@@ -89,3 +89,7 @@ zookeeper-server/src/test/resources/
 
 # Python
 *.py[cod]
+
+conf/zoo.cfg
+conf/zoo*.cfg
+zookeeper-server/src/main/resources/log4j.properties

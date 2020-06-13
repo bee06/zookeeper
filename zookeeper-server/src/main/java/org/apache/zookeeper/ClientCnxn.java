@@ -246,6 +246,9 @@ public class ClientCnxn {
      * This class allows us to pass the headers and the relevant records around.
      */
     static class Packet {
+        /**
+         * 请求头
+         */
         RequestHeader requestHeader;
 
         ReplyHeader replyHeader;
