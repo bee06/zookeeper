@@ -25,7 +25,7 @@ import org.apache.zookeeper.server.ServerStats;
 import org.apache.zookeeper.txn.TxnHeader;
 
 /**
- * Interface for reading transaction logs.
+ * 接口类型，读取事务性日志的接口。
  *
  */
 public interface TxnLog {
@@ -37,11 +37,13 @@ public interface TxnLog {
     void setServerStats(ServerStats serverStats);
     
     /**
+     * 回滚
      * roll the current
      * log being appended to
      * @throws IOException 
      */
     void rollLog() throws IOException;
+
     /**
      * Append a request to the transaction log
      * @param hdr the transaction header

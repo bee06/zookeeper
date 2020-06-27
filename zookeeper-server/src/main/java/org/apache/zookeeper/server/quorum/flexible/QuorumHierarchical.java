@@ -81,6 +81,7 @@ public class QuorumHierarchical implements QuorumVerifier {
     
     private long version = 0;
     
+    @Override
     public int hashCode() {
          assert false : "hashCode not designed";
          return 42; // any arbitrary constant will do 

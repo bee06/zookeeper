@@ -49,8 +49,10 @@ import org.slf4j.LoggerFactory;
  * 服务器连接的接口-表示从客户端到服务器的连接。
  */
 public abstract class ServerCnxn implements Stats, Watcher {
-    // This is just an arbitrary object to represent requests issued by
-    // (aka owned by) this class
+    /**
+     This is just an arbitrary object to represent requests issued by
+     (aka owned by) this class
+    */
     final public static Object me = new Object();
     private static final Logger LOG = LoggerFactory.getLogger(ServerCnxn.class);
     
@@ -90,9 +92,10 @@ public abstract class ServerCnxn implements Stats, Watcher {
         sendBuffer(bb);
     }
 
-    /* notify the client the session is closing and close/cleanup socket */
+    /** notify the client the session is closing and close/cleanup socket */
     abstract void sendCloseSession();
 
+    @Override
     public abstract void process(WatchedEvent event);
 
     public abstract long getSessionId();

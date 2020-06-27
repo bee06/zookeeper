@@ -51,6 +51,7 @@ import org.slf4j.LoggerFactory;
 /**
  * This class implements the TxnLog interface. It provides api's
  * to access the txnlogs and add entries to it.
+ * 实现TxnLog接口，添加了访问该事务性日志的API
  * <p>
  * The format of a Transactional log is as follows:
  * <blockquote><pre>
@@ -112,8 +113,9 @@ public class FileTxnLog implements TxnLog, Closeable {
 
         /** Local variable to read fsync.warningthresholdms into */
         Long fsyncWarningThreshold;
-        if ((fsyncWarningThreshold = Long.getLong(ZOOKEEPER_FSYNC_WARNING_THRESHOLD_MS_PROPERTY)) == null)
+        if ((fsyncWarningThreshold = Long.getLong(ZOOKEEPER_FSYNC_WARNING_THRESHOLD_MS_PROPERTY)) == null) {
             fsyncWarningThreshold = Long.getLong(FSYNC_WARNING_THRESHOLD_MS_PROPERTY, 1000);
+        }
         fsyncWarningThresholdMS = fsyncWarningThreshold;
     }
 
@@ -173,6 +175,7 @@ public class FileTxnLog implements TxnLog, Closeable {
      * rollover the current log file to a new one.
      * @throws IOException
      */
+    @Override
     public synchronized void rollLog() throws IOException {
         if (logStream != null) {
             this.logStream.flush();
@@ -185,6 +188,7 @@ public class FileTxnLog implements TxnLog, Closeable {
      * close all the open file handles
      * @throws IOException
       */
+    @Override
     public synchronized void close() throws IOException {
         if (logStream != null) {
             logStream.close();
@@ -200,6 +204,7 @@ public class FileTxnLog implements TxnLog, Closeable {
      * @param txn the transaction part of the entry
      * returns true iff something appended, otw false
      */
+    @Override
     public synchronized boolean append(TxnHeader hdr, Record txn)
         throws IOException
     {
@@ -283,6 +288,7 @@ public class FileTxnLog implements TxnLog, Closeable {
      * get the last zxid that was logged in the transaction logs
      * @return the last zxid logged in the transaction logs
      */
+    @Override
     public long getLastLoggedZxid() {
         File[] files = getLogFiles(logDir.listFiles(), 0);
         long maxLog=files.length>0?
@@ -323,6 +329,7 @@ public class FileTxnLog implements TxnLog, Closeable {
      * commit the logs. make sure that everything hits the
      * disk
      */
+    @Override
     public synchronized void commit() throws IOException {
         if (logStream != null) {
             logStream.flush();
@@ -358,6 +365,7 @@ public class FileTxnLog implements TxnLog, Closeable {
      *
      * @return elapsed sync time of transaction log in milliseconds
      */
+    @Override
     public long getTxnLogSyncElapsedTime() {
         return syncElapsedMS;
     }
@@ -368,6 +376,7 @@ public class FileTxnLog implements TxnLog, Closeable {
      * @return returns an iterator to iterate through the transaction
      * logs
      */
+    @Override
     public TxnIterator read(long zxid) throws IOException {
         return read(zxid, true);
     }
@@ -390,6 +399,7 @@ public class FileTxnLog implements TxnLog, Closeable {
      * @param zxid the zxid to truncate the logs to
      * @return true if successful false if not
      */
+    @Override
     public boolean truncate(long zxid) throws IOException {
         FileTxnIterator itr = null;
         try {
@@ -443,6 +453,7 @@ public class FileTxnLog implements TxnLog, Closeable {
      * the dbid of this transaction database
      * @return the dbid of this database
      */
+    @Override
     public long getDbId() throws IOException {
         FileTxnIterator itr = new FileTxnIterator(logDir, 0);
         FileHeader fh=readHeader(itr.logFile);
@@ -605,6 +616,7 @@ public class FileTxnLog implements TxnLog, Closeable {
         /**
          * Return total storage size of txnlog that will return by this iterator.
          */
+        @Override
         public long getStorageSize() {
             long sum = 0;
             for (File f : storedFiles) {
@@ -675,6 +687,7 @@ public class FileTxnLog implements TxnLog, Closeable {
          * @return true if there is more transactions to be read
          * false if not.
          */
+        @Override
         public boolean next() throws IOException {
             if (ia == null) {
                 return false;
@@ -719,6 +732,7 @@ public class FileTxnLog implements TxnLog, Closeable {
          * @return the current header that
          * is read
          */
+        @Override
         public TxnHeader getHeader() {
             return hdr;
         }
@@ -728,6 +742,7 @@ public class FileTxnLog implements TxnLog, Closeable {
          * @return the current transaction
          * that is read
          */
+        @Override
         public Record getTxn() {
             return record;
         }
@@ -736,6 +751,7 @@ public class FileTxnLog implements TxnLog, Closeable {
          * close the iterator
          * and release the resources.
          */
+        @Override
         public void close() throws IOException {
             if (inputStream != null) {
                 inputStream.close();

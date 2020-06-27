@@ -209,6 +209,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements
         }
     }
 
+    @Override
     public void processRequest(Request request) {
         // request.addRQRec(">sync");
         queuedRequests.add(request);

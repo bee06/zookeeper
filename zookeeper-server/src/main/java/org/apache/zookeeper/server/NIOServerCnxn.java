@@ -120,6 +120,7 @@ public class NIOServerCnxn extends ServerCnxn {
     /* Send close connection packet to the client, doIO will eventually
      * close the underlying machinery (like socket, selectorkey, etc...)
      */
+    @Override
     public void sendCloseSession() {
         sendBuffer(ServerCnxnFactory.closeConn);
     }
@@ -151,6 +152,7 @@ public class NIOServerCnxn extends ServerCnxn {
      * sendBuffer pushes a byte buffer onto the outgoing buffer queue for
      * asynchronous writes.
      */
+    @Override
     public void sendBuffer(ByteBuffer bb) {
         if (LOG.isTraceEnabled()) {
             LOG.trace("Add a buffer to outgoingBuffers, sk " + sk
@@ -381,6 +383,7 @@ public class NIOServerCnxn extends ServerCnxn {
     }
 
     // Only called as callback from zkServer.processPacket()
+    @Override
     protected void incrOutstandingRequests(RequestHeader h) {
         if (h.getXid() >= 0) {
             outstandingRequests.incrementAndGet();
@@ -411,6 +414,7 @@ public class NIOServerCnxn extends ServerCnxn {
 
     // Throttle acceptance of new requests. If this entailed a state change,
     // register an interest op update request with the selector.
+    @Override
     public void disableRecv() {
         if (throttled.compareAndSet(false, true)) {
             requestInterestOpsUpdate();
@@ -420,6 +424,7 @@ public class NIOServerCnxn extends ServerCnxn {
     // Disable throttling and resume acceptance of new requests. If this
     // entailed a state change, register an interest op update request with
     // the selector.
+    @Override
     public void enableRecv() {
         if (throttled.compareAndSet(true, false)) {
             requestInterestOpsUpdate();
@@ -575,6 +580,7 @@ public class NIOServerCnxn extends ServerCnxn {
      *
      * @see org.apache.zookeeper.server.ServerCnxnIface#getSessionTimeout()
      */
+    @Override
     public int getSessionTimeout() {
         return sessionTimeout;
     }

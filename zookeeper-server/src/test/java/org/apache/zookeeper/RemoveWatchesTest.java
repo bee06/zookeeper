@@ -1119,6 +1119,7 @@ public class RemoveWatchesTest extends ClientBase {
             public int lastrc;
 
             /* Pretend that any watcher exists */
+            @Override
             void containsWatcher(String path, Watcher watcher,
                     WatcherType watcherType) throws NoWatcherException {
             }
@@ -1140,6 +1141,7 @@ public class RemoveWatchesTest extends ClientBase {
 
         private MyWatchManager myWatchManager;
 
+        @Override
         protected ZKWatchManager defaultWatchManager() {
             myWatchManager = new MyWatchManager(getClientConfig().getBoolean(ZKClientConfig.DISABLE_AUTO_WATCH_RESET));
             return myWatchManager;

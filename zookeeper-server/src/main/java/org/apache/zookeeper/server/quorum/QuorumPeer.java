@@ -317,6 +317,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             }
         }
 
+        @Override
         public String toString(){
             StringWriter sw = new StringWriter();
             //addr should never be null, but just to make sure
@@ -329,8 +330,11 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
                 sw.append(":");
                 sw.append(String.valueOf(electionAddr.getPort()));
             }           
-            if (type == LearnerType.OBSERVER) sw.append(":observer");
-            else if (type == LearnerType.PARTICIPANT) sw.append(":participant");            
+            if (type == LearnerType.OBSERVER) {
+                sw.append(":observer");
+            } else if (type == LearnerType.PARTICIPANT) {
+                sw.append(":participant");
+            }
             if (clientAddr!=null){
                 sw.append(";");
                 sw.append(delimitedHostString(clientAddr));
@@ -339,27 +343,37 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             }
             return sw.toString();       
         }
-
+        @Override
         public int hashCode() {
           assert false : "hashCode not designed";
           return 42; // any arbitrary constant will do 
         }
-        
+
+
         private boolean checkAddressesEqual(InetSocketAddress addr1, InetSocketAddress addr2){
             if ((addr1 == null && addr2!=null) ||
                 (addr1!=null && addr2==null) ||
-                (addr1!=null && addr2!=null && !addr1.equals(addr2))) return false;
+                (addr1!=null && addr2!=null && !addr1.equals(addr2))) {
+                return false;
+            }
             return true;
         }
-        
+        @Override
         public boolean equals(Object o){
-            if (!(o instanceof QuorumServer)) return false;
+            if (!(o instanceof QuorumServer)) {
+                return false;
+            }
             QuorumServer qs = (QuorumServer)o;          
-            if ((qs.id != id) || (qs.type != type)) return false;   
-            if (!checkAddressesEqual(addr, qs.addr)) return false;
-            if (!checkAddressesEqual(electionAddr, qs.electionAddr)) return false;
-            if (!checkAddressesEqual(clientAddr, qs.clientAddr)) return false;                    
-            return true;
+            if ((qs.id != id) || (qs.type != type)) {
+                return false;
+            }
+            if (!checkAddressesEqual(addr, qs.addr)) {
+                return false;
+            }
+            if (!checkAddressesEqual(electionAddr, qs.electionAddr)) {
+                return false;
+            }
+            return checkAddressesEqual(clientAddr, qs.clientAddr);
         }
 
         public void checkAddressDuplicate(QuorumServer s) throws BadArgumentsException {
@@ -482,6 +496,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     /**
      * get the id of this quorum peer.
      */
+    @Override
     public long getId() {
         return myid;
     }
@@ -893,7 +908,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         if (!getView().containsKey(myid)) {
             throw new RuntimeException("My id " + myid + " not in the peer list");
          }
-        // //从事务日志目录dataLogDir和数据快照目录dataDir中恢复出DataTree数据
+        //从事务日志目录dataLogDir和数据快照目录dataDir中恢复出DataTree数据
         loadDataBase();
         // 开启对客户端的连接端口,启动ServerCnxnFactory主线程
         startServerCnxnFactory();
@@ -1142,12 +1157,13 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     }
 
     synchronized public ZooKeeperServer getActiveServer(){
-        if(leader!=null)
+        if(leader!=null) {
             return leader.zk;
-        else if(follower!=null)
+        } else if(follower!=null) {
             return follower.zk;
-        else if (observer != null)
+        } else if (observer != null) {
             return observer.zk;
+        }
         return null;
     }
 
@@ -1655,8 +1671,9 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             }
             QuorumVerifier prevQV = quorumVerifier;
             quorumVerifier = qv;
-            if (lastSeenQuorumVerifier == null || (qv.getVersion() > lastSeenQuorumVerifier.getVersion()))
+            if (lastSeenQuorumVerifier == null || (qv.getVersion() > lastSeenQuorumVerifier.getVersion())) {
                 lastSeenQuorumVerifier = qv;
+            }
 
             if (writeToDisk) {
                 // some tests initialize QuorumPeer without a static config file
@@ -1856,7 +1873,9 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     }
 
     public synchronized void initConfigInZKDatabase() {   
-        if (zkDb != null) zkDb.initConfigInZKDatabase(getQuorumVerifier());
+        if (zkDb != null) {
+            zkDb.initConfigInZKDatabase(getQuorumVerifier());
+        }
     }
 
     public boolean isRunning() {
@@ -1869,6 +1888,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     public QuorumCnxManager getQuorumCnxManager() {
         return qcmRef.get();
     }
+
     private long readLongFromFile(String name) throws IOException {
         File file = new File(logFactory.getSnapDir(), name);
         BufferedReader br = new BufferedReader(new FileReader(file));

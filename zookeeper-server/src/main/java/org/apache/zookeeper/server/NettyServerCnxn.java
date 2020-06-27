@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,18 +17,6 @@
  */
 
 package org.apache.zookeeper.server;
-
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
-import java.security.cert.Certificate;
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
@@ -51,6 +39,18 @@ import org.apache.zookeeper.server.command.SetTraceMaskCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.security.cert.Certificate;
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+
 public class NettyServerCnxn extends ServerCnxn {
     private static final Logger LOG = LoggerFactory.getLogger(NettyServerCnxn.class);
     private final Channel channel;
@@ -65,9 +65,9 @@ public class NettyServerCnxn extends ServerCnxn {
     private volatile boolean closingChannel;
 
     /** The ZooKeeperServer for this connection. May be null if the server
-      * is not currently serving requests (for example if the server is not
-      * an active quorum participant.
-      */
+     * is not currently serving requests (for example if the server is not
+     * an active quorum participant.
+     */
     private volatile ZooKeeperServer zkServer;
 
     private final NettyServerCnxnFactory factory;
@@ -111,7 +111,7 @@ public class NettyServerCnxn extends ServerCnxn {
 
         factory.removeCnxnFromIpMap(
                 this,
-                ((InetSocketAddress)channel.remoteAddress()).getAddress());
+                ((InetSocketAddress) channel.remoteAddress()).getAddress());
 
         if (zkServer != null) {
             zkServer.removeCnxn(this);
@@ -147,9 +147,9 @@ public class NettyServerCnxn extends ServerCnxn {
         ReplyHeader h = new ReplyHeader(-1, -1L, 0);
         if (LOG.isTraceEnabled()) {
             ZooTrace.logTraceMessage(LOG, ZooTrace.EVENT_DELIVERY_TRACE_MASK,
-                                     "Deliver event " + event + " to 0x"
-                                     + Long.toHexString(this.sessionId)
-                                     + " through " + this);
+                    "Deliver event " + event + " to 0x"
+                            + Long.toHexString(this.sessionId)
+                            + " through " + this);
         }
 
         // Convert WatchedEvent to a type that can be sent over the wire
@@ -271,7 +271,7 @@ public class NettyServerCnxn extends ServerCnxn {
 
         LOG.info("Processing {} command from {}", cmd, channel.remoteAddress());
 
-       if (len == FourLetterCommands.setTraceMaskCmd) {
+        if (len == FourLetterCommands.setTraceMaskCmd) {
             ByteBuffer mask = ByteBuffer.allocate(8);
             message.readBytes(mask);
             mask.flip();
@@ -282,7 +282,7 @@ public class NettyServerCnxn extends ServerCnxn {
             return true;
         } else {
             CommandExecutor commandExecutor = new CommandExecutor();
-            return commandExecutor.execute(this, pwriter, len, zkServer,factory);
+            return commandExecutor.execute(this, pwriter, len, zkServer, factory);
         }
     }
 
@@ -433,7 +433,7 @@ public class NettyServerCnxn extends ServerCnxn {
     private void receiveMessage(ByteBuf message) {
         checkIsInEventLoop("receiveMessage");
         try {
-            while(message.isReadable() && !throttled.get()) {
+            while (message.isReadable() && !throttled.get()) {
                 if (bb != null) {
                     if (LOG.isTraceEnabled()) {
                         LOG.trace("message readable {} bb len {} {}",
@@ -536,7 +536,7 @@ public class NettyServerCnxn extends ServerCnxn {
                     }
                 }
             }
-        } catch(IOException e) {
+        } catch (IOException e) {
             LOG.warn("Closing connection to " + getRemoteSocketAddress(), e);
             close();
         }
@@ -610,7 +610,7 @@ public class NettyServerCnxn extends ServerCnxn {
 
     @Override
     public InetSocketAddress getRemoteSocketAddress() {
-        return (InetSocketAddress)channel.remoteAddress();
+        return (InetSocketAddress) channel.remoteAddress();
     }
 
     /** Send close connection packet to the client.
@@ -635,8 +635,7 @@ public class NettyServerCnxn extends ServerCnxn {
 
     @Override
     public Certificate[] getClientCertificateChain() {
-        if (clientChain == null)
-        {
+        if (clientChain == null) {
             return null;
         }
         return Arrays.copyOf(clientChain, clientChain.length);
@@ -644,8 +643,7 @@ public class NettyServerCnxn extends ServerCnxn {
 
     @Override
     public void setClientCertificateChain(Certificate[] chain) {
-        if (chain == null)
-        {
+        if (chain == null) {
             clientChain = null;
         } else {
             clientChain = Arrays.copyOf(chain, chain.length);

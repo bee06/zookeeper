@@ -64,7 +64,8 @@ public class CommitProcessorConcurrencyTest extends ZKTestCase {
         MockCommitProcessor() {
           super( 
                   new RequestProcessor() {
-                      public void processRequest(Request request) 
+                      @Override
+                      public void processRequest(Request request)
                               throws RequestProcessorException {
                           executedFlag = true;
                       }

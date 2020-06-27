@@ -390,8 +390,9 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
             case OpCode.delete:
                 zks.sessionTracker.checkSession(request.sessionId, request.getOwner());
                 DeleteRequest deleteRequest = (DeleteRequest)record;
-                if(deserialize)
+                if(deserialize) {
                     ByteBufferInputStream.byteBuffer2Record(request.request, deleteRequest);
+                }
                 String path = deleteRequest.getPath();
                 String parentPath = getParentPathAndValidate(path);
                 ChangeRecord parentRecord = getRecordForPath(parentPath);
@@ -410,8 +411,9 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
             case OpCode.setData:
                 zks.sessionTracker.checkSession(request.sessionId, request.getOwner());
                 SetDataRequest setDataRequest = (SetDataRequest)record;
-                if(deserialize)
+                if(deserialize) {
                     ByteBufferInputStream.byteBuffer2Record(request.request, setDataRequest);
+                }
                 path = setDataRequest.getPath();
                 validatePath(path, request.sessionId);
                 nodeRecord = getRecordForPath(path);
@@ -558,8 +560,9 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
             case OpCode.setACL:
                 zks.sessionTracker.checkSession(request.sessionId, request.getOwner());
                 SetACLRequest setAclRequest = (SetACLRequest)record;
-                if(deserialize)
+                if(deserialize) {
                     ByteBufferInputStream.byteBuffer2Record(request.request, setAclRequest);
+                }
                 path = setAclRequest.getPath();
                 validatePath(path, request.sessionId);
                 List<ACL> listACL = fixupACL(path, request.authInfo, setAclRequest.getAcl());
@@ -611,8 +614,9 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
             case OpCode.check:
                 zks.sessionTracker.checkSession(request.sessionId, request.getOwner());
                 CheckVersionRequest checkVersionRequest = (CheckVersionRequest)record;
-                if(deserialize)
+                if(deserialize) {
                     ByteBufferInputStream.byteBuffer2Record(request.request, checkVersionRequest);
+                }
                 path = checkVersionRequest.getPath();
                 validatePath(path, request.sessionId);
                 nodeRecord = getRecordForPath(path);
@@ -999,10 +1003,12 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
         return rv;
     }
 
+    @Override
     public void processRequest(Request request) {
         submittedRequests.add(request);
     }
 
+    @Override
     public void shutdown() {
         LOG.info("Shutting down");
         submittedRequests.clear();
