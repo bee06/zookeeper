@@ -877,7 +877,9 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         this.quorumListenOnAllIPs = quorumListenOnAllIPs;
         this.logFactory = new FileTxnSnapLog(dataLogDir, dataDir);
         this.zkDb = new ZKDatabase(this.logFactory);
-        if(quorumConfig == null) quorumConfig = new QuorumMaj(quorumPeers);
+        if(quorumConfig == null) {
+            quorumConfig = new QuorumMaj(quorumPeers);
+        }
         setQuorumVerifier(quorumConfig, false);
         adminServer = AdminServerFactory.createAdminServer();
     }

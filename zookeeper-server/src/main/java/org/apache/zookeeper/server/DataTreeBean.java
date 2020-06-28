@@ -46,10 +46,12 @@ public class DataTreeBean implements DataTreeMXBean, ZKMBeanInfo {
         return dataTree.getWatchCount();
     }
 
+    @Override
     public String getName() {
         return "InMemoryDataTree";
     }
 
+    @Override
     public boolean isHidden() {
         return false;
     }

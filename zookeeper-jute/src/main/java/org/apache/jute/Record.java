@@ -28,8 +28,8 @@ import java.io.IOException;
  */
 @InterfaceAudience.Public
 public interface Record {
-    public void serialize(OutputArchive archive, String tag)
+    void serialize(OutputArchive archive, String tag)
         throws IOException;
-    public void deserialize(InputArchive archive, String tag)
+    void deserialize(InputArchive archive, String tag)
         throws IOException;
 }

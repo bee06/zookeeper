@@ -37,9 +37,11 @@ public class RemotePeerBean implements RemotePeerMXBean,ZKMBeanInfo {
         this.peer = peer;
     }
 
+    @Override
     public String getName() {
         return "replica."+peer.id;
     }
+    @Override
     public boolean isHidden() {
         return false;
     }

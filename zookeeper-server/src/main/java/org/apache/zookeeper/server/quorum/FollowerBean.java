@@ -32,6 +32,7 @@ public class FollowerBean extends ZooKeeperServerBean implements FollowerMXBean 
         this.follower = follower;
     }
     
+    @Override
     public String getName() {
         return "Follower";
     }

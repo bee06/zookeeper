@@ -32,6 +32,7 @@ public class LeaderBean extends ZooKeeperServerBean implements LeaderMXBean {
         this.leader = leader;
     }
     
+    @Override
     public String getName() {
         return "Leader";
     }

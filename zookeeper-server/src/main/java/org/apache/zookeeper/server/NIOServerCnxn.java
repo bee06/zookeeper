@@ -571,6 +571,7 @@ public class NIOServerCnxn extends ServerCnxn {
         return zkServer != null && zkServer.isRunning();
     }
 
+    @Override
     public long getOutstandingRequests() {
         return outstandingRequests.get();
     }

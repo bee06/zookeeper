@@ -43,10 +43,12 @@ public class ZooKeeperServerBean implements ZooKeeperServerMXBean, ZKMBeanInfo {
         return Integer.toString(zks.getClientPort());
     }
     
+    @Override
     public String getName() {
         return name;
     }
     
+    @Override
     public boolean isHidden() {
         return false;
     }

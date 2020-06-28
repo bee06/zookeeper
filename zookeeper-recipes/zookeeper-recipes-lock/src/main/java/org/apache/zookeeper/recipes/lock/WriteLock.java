@@ -149,6 +149,7 @@ public class WriteLock extends ProtocolSupport {
      * my predecessor
      */
     private class LockWatcher implements Watcher {
+        @Override
         public void process(WatchedEvent event) {
             // lets either become the leader or watch the new/updated node
             LOG.debug("Watcher fired on path: " + event.getPath() + " state: " + 

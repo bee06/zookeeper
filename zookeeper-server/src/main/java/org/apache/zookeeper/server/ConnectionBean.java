@@ -77,11 +77,13 @@ public class ConnectionBean implements ConnectionMXBean, ZKMBeanInfo {
             + ":" + sockAddr.getPort();
     }
 
+    @Override
     public String getName() {
         return MBeanRegistry.getInstance().makeFullPath("Connections", remoteIP,
                 getSessionId());
     }
     
+    @Override
     public boolean isHidden() {
         return false;
     }

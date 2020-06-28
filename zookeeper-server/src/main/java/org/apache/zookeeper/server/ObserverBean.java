@@ -34,6 +34,7 @@ public class ObserverBean extends ZooKeeperServerBean implements ObserverMXBean{
         this.observer = observer;
     }
 
+    @Override
     public String getName() {
         return "Observer";
     }

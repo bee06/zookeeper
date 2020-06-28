@@ -31,10 +31,12 @@ public class LocalPeerBean extends ServerBean implements LocalPeerMXBean {
         this.peer = peer;
     }
 
+    @Override
     public String getName() {
         return "replica." + peer.getId();
     }
 
+    @Override
     public boolean isHidden() {
         return false;
     }

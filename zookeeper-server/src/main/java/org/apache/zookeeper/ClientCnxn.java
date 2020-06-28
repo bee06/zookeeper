@@ -407,7 +407,11 @@ public class ClientCnxn {
         initRequestTimeout();
     }
 
+    /**
+     * 启动两个线程
+     */
     public void start() {
+        // 见名知意  一个是发送数据的线程  一个是事件处理的线程
         sendThread.start();
         eventThread.start();
     }
@@ -842,6 +846,7 @@ public class ClientCnxn {
                 }
                 return;
             }
+            // xid是-1 表示通知类型
             if (replyHdr.getXid() == -1) {
                 // -1 means notification
                 if (LOG.isDebugEnabled()) {
@@ -854,11 +859,11 @@ public class ClientCnxn {
                 // convert from a server path to a client path
                 if (chrootPath != null) {
                     String serverPath = event.getPath();
-                    if (serverPath.compareTo(chrootPath) == 0)
+                    if (serverPath.compareTo(chrootPath) == 0) {
                         event.setPath("/");
-                    else if (serverPath.length() > chrootPath.length())
+                    } else if (serverPath.length() > chrootPath.length()) {
                         event.setPath(serverPath.substring(chrootPath.length()));
-                    else {
+                    } else {
                         LOG.warn("Got server path " + event.getPath()
                                 + " which is too short for chroot path "
                                 + chrootPath);
@@ -1520,7 +1525,9 @@ public class ClientCnxn {
                                      Record response, WatchRegistration watchRegistration,
                                      WatchDeregistration watchDeregistration)
             throws InterruptedException {
+        // 回复的请求头
         ReplyHeader r = new ReplyHeader();
+        // 最小单元
         Packet packet = queuePacket(h, r, request, response, null, null, null,
                 null, watchRegistration, watchDeregistration);
         synchronized(packet) {
@@ -1586,6 +1593,20 @@ public class ClientCnxn {
                 ctx, watchRegistration, null);
     }
 
+    /**
+     *
+     * @param h
+     * @param r
+     * @param request
+     * @param response
+     * @param cb
+     * @param clientPath
+     * @param serverPath
+     * @param ctx
+     * @param watchRegistration
+     * @param watchDeregistration
+     * @return
+     */
     public Packet queuePacket(RequestHeader h, ReplyHeader r, Record request,
                               Record response, AsyncCallback cb, String clientPath,
                               String serverPath, Object ctx, WatchRegistration watchRegistration,

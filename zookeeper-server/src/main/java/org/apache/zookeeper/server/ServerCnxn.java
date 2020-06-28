@@ -230,16 +230,20 @@ public abstract class ServerCnxn implements Stats, Watcher {
         totalLatency += elapsed;
     }
 
+    @Override
     public Date getEstablished() {
         return (Date)established.clone();
     }
 
+    @Override
     public abstract long getOutstandingRequests();
 
+    @Override
     public long getPacketsReceived() {
         return packetsReceived.longValue();
     }
 
+    @Override
     public long getPacketsSent() {
         return packetsSent.longValue();
     }
